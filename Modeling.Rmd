@@ -1,0 +1,120 @@
+---
+title: "Modeling"
+author: "Serkan Oral"
+date: '2022-05-23'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Before modeling, we need some adjustment.
+
+```{r include=FALSE}
+
+train_last$COCUK_SAYISI <- as.factor(train_last$COCUK_SAYISI)
+test_last$COCUK_SAYISI <- as.factor(test_last$COCUK_SAYISI)
+
+train_last$OFFICE_ID <- as.factor(train_last$OFFICE_ID)
+test_last$OFFICE_ID <- as.factor(test_last$OFFICE_ID)
+
+
+train_last$POLICY_ID <- as.factor(train_last$POLICY_ID)
+test_last$POLICY_ID <- as.factor(test_last$POLICY_ID)
+
+
+
+```
+
+Splitting the data
+
+```{r splitting, include=FALSE}
+split <- initial_split(train_last, strata = ARTIS_DURUMU)
+
+anadolu_train <- training(split)
+anadolu_test <- testing(split)
+```
+
+
+Here we create our recipe
+
+```{r}
+set.seed(123)
+rf_rec <- anadolu_train %>%
+  recipe(ARTIS_DURUMU ~ .) %>%
+  step_rm(GELIR,YATIRIM_KARAKTERI,MEMLEKET, AY) %>% # too many missing values, we remove them
+  step_impute_mode(all_nominal_predictors()) %>% # imputing with mode for factors
+  step_other(KAPSAM_TIPI,POLICE_SEHIR,UYRUK,MESLEK_KIRILIM) %>%# too many options,reduce
+  step_corr(all_numeric_predictors()) %>% #removing irrelevant numeric
+  step_downsample(ARTIS_DURUMU) # unbalance data, 
+  
+```
+
+Creating random forest model, tuning take so much time. So I try couple values. I found out the below values the best.
+
+```{r}
+rf_spec <- rand_forest(mtry = 6,min_n = 10) %>%
+  set_engine("ranger" , importance = "permutation") %>%
+  set_mode("classification")
+
+```
+
+Creating the workflow
+
+```{r}
+rf_wf <- workflow( ) %>% 
+  add_recipe(rf_rec) %>% 
+  add_model(rf_spec)
+```
+
+At last, we fit the model
+
+```{r}
+set.seed(123)
+doParallel::registerDoParallel()
+
+rf_fit <- fit(rf_wf, train_last)
+```
+
+Creating the submission file. As we pivoted the data, there are more the one "POLICY_ID". So we need some manipulation to get it to right format
+
+```{r}
+set.seed(123)
+
+doParallel::registerDoParallel()
+prediction <- predict(rf_fit,new_data = test_last) 
+
+submission <- test_last %>% 
+  select(POLICY_ID) %>% 
+  bind_cols(prediction) %>% 
+  rename(ARTIS_DURUMU = ".pred_class") %>% 
+  distinct()
+  
+
+submission <- submission %>% 
+  mutate(ARTIS_DURUMU = if_else(ARTIS_DURUMU == "0",0,1))
+
+
+submission <- submission %>%
+  group_by(POLICY_ID) %>%
+  summarise(ARTIS_DURUMU = max(ARTIS_DURUMU))
+
+write_csv(submission,file = "Submission.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

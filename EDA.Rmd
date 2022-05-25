@@ -1,0 +1,199 @@
+---
+title: "EDA"
+author: "Serkan Oral"
+date: '2022-05-23'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+We will check out the general position of each feature according to "ARTIS_DURUMU", that's what will be predicted.
+
+```{r}
+SIGORTA_TIP <- train %>%
+ggplot(aes( SIGORTA_TIP,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Sigorta Tipi", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+SOZLESME_KOKENI <- train %>%
+ggplot(aes( SOZLESME_KOKENI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Sözleşme Kökeni", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+SOZLESME_KOKENI_DETAY <- train %>%
+ggplot(aes( SOZLESME_KOKENI_DETAY  ,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Sözleşme Kökeni Detay", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+SIGORTA_TIP / SOZLESME_KOKENI / SOZLESME_KOKENI_DETAY
+
+```
+
+```{r}
+BASLANGIC_TARIHI <- train %>%
+ggplot(aes( BASLANGIC_TARIHI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Başlangış Tarihi", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma) +
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+KAPSAM_TIPI <- train %>%
+mutate(KAPSAM_TIPI = fct_lump(KAPSAM_TIPI,5)) %>%
+ggplot(aes( KAPSAM_TIPI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Kapsam Tipi", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+KAPSAM_GRUBU <- train %>%
+ggplot(aes( KAPSAM_GRUBU,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Kapsam Grubu", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+BASLANGIC_TARIHI / KAPSAM_TIPI / KAPSAM_GRUBU
+
+```
+
+
+```{r}
+DAGITIM_KANALI <- train %>%
+ggplot(aes( DAGITIM_KANALI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Dağıtım Kanalı", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+POLICE_SEHIR <- train %>%
+mutate(POLICE_SEHIR = fct_lump(POLICE_SEHIR,7)) %>%
+ggplot(aes( POLICE_SEHIR,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Poliçe Şehir", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+
+DOGUM_TARIHI <- train %>%
+ggplot(aes( DOGUM_TARIHI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Doğum Tarihi", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+DAGITIM_KANALI / POLICE_SEHIR / DOGUM_TARIHI
+
+```
+
+
+```{r}
+
+CINSIYET <- train %>%
+ggplot(aes( CINSIYET,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Cinsiyet", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+UYRUK <- train %>%
+mutate(UYRUK = fct_lump(UYRUK,1)) %>%
+ggplot(aes( UYRUK,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Uyruk", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+MEMLEKET <- train %>%
+ggplot(aes( MEMLEKET,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Memleket", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+CINSIYET / UYRUK / MEMLEKET
+
+```
+
+
+```{r}
+MESLEK <- train %>%
+mutate(MESLEK = fct_lump(MESLEK,7)) %>%
+ggplot(aes( MESLEK,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Meslek", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+MESLEK_KIRILIM <- train %>%
+mutate(MESLEK_KIRILIM = fct_lump(MESLEK_KIRILIM,7)) %>%
+ggplot(aes( MESLEK_KIRILIM,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Meslet Kırılım", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+MUSTERI_SEGMENTI <- train %>%
+ggplot(aes( MUSTERI_SEGMENTI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Müşteri Segmenti", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+MESLEK / MESLEK_KIRILIM / MUSTERI_SEGMENTI
+
+```
+
+
+```{r}
+YATIRIM_KARAKTERI <- train %>%
+ggplot(aes( YATIRIM_KARAKTERI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Yatırım Karakteri", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)
+
+MEDENI_HAL <- train %>%
+ggplot(aes( MEDENI_HAL,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Medeni Hal", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+EGITIM_DURUM <- train %>%
+ggplot(aes( EGITIM_DURUM,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Eğitim Durumu", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+YATIRIM_KARAKTERI / MEDENI_HAL / EGITIM_DURUM
+
+```
+
+```{r}
+
+COCUK_SAYISI <- train %>%
+mutate_at(vars(COCUK_SAYISI), ~replace_na(.,0)) %>%
+mutate(COCUK_SAYISI = fct_lump(as.factor(COCUK_SAYISI),5,other_level = "More")) %>%
+ggplot(aes( COCUK_SAYISI,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Çocuk Sayısı", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+ODENEN_TUTAR <- train_last %>%
+mutate_at(vars(ODENEN_TUTAR), ~replace_na(.,0)) %>%
+mutate(ODENEN_TUTAR = fct_lump(as.factor(ODENEN_TUTAR),12,other_level = "More")) %>%
+ggplot(aes( ODENEN_TUTAR  ,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Ödenen Tutar", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+VADE_TUTARI <- train_last %>%
+mutate_at(vars(VADE_TUTARI), ~replace_na(.,0)) %>%
+mutate(VADE_TUTARI = fct_lump(as.factor(VADE_TUTARI),12,other_level = "More")) %>%
+ggplot(aes( VADE_TUTARI ,fill = ARTIS_DURUMU)) + 
+geom_bar() + labs( x = "Vade Tutarı", y = NULL, fill = "Artış Durumu")+
+scale_y_continuous(labels = scales::comma)+
+theme(axis.text.x=element_text(angle = 90, hjust = 0))
+
+COCUK_SAYISI/ ODENEN_TUTAR / VADE_TUTARI
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+---
+title: "Data_Cleaning"
+author: "Serkan Oral"
+date: '2022-05-23'
+output: html_document
+---
+
+Downloading necessary packages
+
+```{r packages, include= FALSE}
+
+library(tidyverse)
+library(tidymodels)
+library(naniar)
+library(GGally)
+library(lubridate)
+library(corrplot)
+library(ggcorrplot)
+library(themis)
+library(skimr)
+library(finetune)
+library(patchwork)
+
+```
+
+Importing Data
+
+```{r reading_data, include=FALSE}
+sample <- read_csv("Data/samplesubmission.csv")
+train <- read_csv("Data/train.csv")
+test <- read_csv("Data/test.csv")
+```
+
+
+Some cleaning
+We need long format, so columns ends with "_ODENEN_TUTAR","_VADE_TUTARI" pivoted.
+The month also later separated.
+
+```{r some_cleaning, include=FALSE}
+
+train_pivot <- train %>%
+rename("SUBAT_ODENEN_TUTAR" = SUBAT_ODENEN_TU) %>%
+pivot_longer(cols =ends_with(c("_ODENEN_TUTAR","_VADE_TUTARI")), names_to = "AY", values_to = "ODENEN_TUTAR") 
+
+train_last <- train_pivot %>%
+bind_cols(str_split_fixed(train_pivot$AY, '_', 2)) %>%
+select(-AY) %>%
+pivot_wider(names_from = ...29, values_from = ODENEN_TUTAR) %>%
+rename( "AY" = ...28 )
+
+train_last <- train_last %>%
+mutate_at(vars(ODENEN_TUTAR), ~replace_na(.,0)) %>%
+mutate_if(is.character,as.factor)
+
+train_last <-train_last %>% 
+  mutate(BASLANGIC_TARIHI = ymd(paste0(BASLANGIC_TARIHI, "-","1")))
+
+```
+
+
+Some formatting. Most them converted to factor.
+
+```{r include=FALSE}
+train_last <- train_last %>%
+mutate(SIGORTA_TIP = as.factor(SIGORTA_TIP),
+      SOZLESME_KOKENI = as.factor(SOZLESME_KOKENI),
+      SOZLESME_KOKENI_DETAY = as.factor(SOZLESME_KOKENI_DETAY),
+      CINSIYET = as.factor(CINSIYET),
+      MEMLEKET = as.factor(MEMLEKET),
+      MUSTERI_SEGMENTI = as.factor(MUSTERI_SEGMENTI),
+      ARTIS_DURUMU = as.factor(ARTIS_DURUMU),
+      FARK = (SENE_SONU_HESAP_DEGERI - SENE_BASI_HESAP_DEGERI)     
+      )
+
+train <- train %>%
+mutate(SIGORTA_TIP = as.factor(SIGORTA_TIP),
+      SOZLESME_KOKENI = as.factor(SOZLESME_KOKENI),
+      SOZLESME_KOKENI_DETAY = as.factor(SOZLESME_KOKENI_DETAY),
+      CINSIYET = as.factor(CINSIYET),
+      MEMLEKET = as.factor(MEMLEKET),
+      MUSTERI_SEGMENTI = as.factor(MUSTERI_SEGMENTI),
+      ARTIS_DURUMU = as.factor(ARTIS_DURUMU) ,
+      BASLANGIC_TARIHI = ymd(paste0(BASLANGIC_TARIHI, "-","1")),
+      FARK = (SENE_SONU_HESAP_DEGERI - SENE_BASI_HESAP_DEGERI)
+      )
+
+```
+
+The same pivotting with test data
+
+```{r cleaning_test, include=FALSE}
+test_pivot <- test %>%
+rename("SUBAT_ODENEN_TUTAR" = SUBAT_ODENEN_TU) %>%
+pivot_longer(cols =ends_with(c("_ODENEN_TUTAR","_VADE_TUTARI")), names_to = "AY", values_to = "ODENEN_TUTAR") 
+
+test_last <- test_pivot %>%
+bind_cols(str_split_fixed(test_pivot$AY, '_', 2)) %>% 
+select(-AY) %>%
+pivot_wider(names_from = ...28, values_from = ODENEN_TUTAR) %>%
+rename( "AY" = ...27 )
+
+test_last <- test_last %>%
+mutate_at(vars(ODENEN_TUTAR), ~replace_na(.,0)) %>%
+mutate_if(is.character,as.factor)
+
+test_last <-test_last %>% 
+  mutate(BASLANGIC_TARIHI = ymd(paste0(BASLANGIC_TARIHI, "-","1")))
+
+test_last <- test_last %>%
+mutate(SIGORTA_TIP = as.factor(SIGORTA_TIP),
+      SOZLESME_KOKENI = as.factor(SOZLESME_KOKENI),
+      SOZLESME_KOKENI_DETAY = as.factor(SOZLESME_KOKENI_DETAY),
+      CINSIYET = as.factor(CINSIYET),
+      MEMLEKET = as.factor(MEMLEKET),
+      MUSTERI_SEGMENTI = as.factor(MUSTERI_SEGMENTI),
+      ARTIS_DURUMU = 0,
+      FARK = (SENE_SONU_HESAP_DEGERI - SENE_BASI_HESAP_DEGERI)
+      )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
